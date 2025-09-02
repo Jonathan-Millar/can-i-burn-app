@@ -31,6 +31,30 @@ def normalize_county_name(county_name, province_code):
     elif province_code == 'NS':
         # Nova Scotia counties - return as-is after cleaning
         return county_name.title()
+    elif province_code == 'ON':
+        # Ontario counties/regions - return as-is after cleaning
+        return county_name.title()
+    elif province_code == 'BC':
+        # British Columbia regions - return as-is after cleaning
+        return county_name.title()
+    elif province_code == 'AB':
+        # Alberta regions - return as-is after cleaning
+        return county_name.title()
+    elif province_code == 'SK':
+        # Saskatchewan municipalities - return as-is after cleaning
+        return county_name.title()
+    elif province_code == 'MB':
+        # Manitoba municipalities - return as-is after cleaning
+        return county_name.title()
+    elif province_code == 'QC':
+        # Quebec regions - return as-is after cleaning
+        return county_name.title()
+    elif province_code == 'NL':
+        # Newfoundland and Labrador regions - return as-is after cleaning
+        return county_name.title()
+    elif province_code in ['YT', 'NT', 'NU']:
+        # Territories - return as-is after cleaning
+        return county_name.title()
     
     return county_name
 
@@ -59,6 +83,26 @@ def detect_province_and_county(latitude, longitude, max_retries=3):
                     province_code = 'NB'
                 elif province_full_name == 'Nova Scotia':
                     province_code = 'NS'
+                elif province_full_name == 'Ontario':
+                    province_code = 'ON'
+                elif province_full_name == 'British Columbia':
+                    province_code = 'BC'
+                elif province_full_name == 'Alberta':
+                    province_code = 'AB'
+                elif province_full_name == 'Saskatchewan':
+                    province_code = 'SK'
+                elif province_full_name == 'Manitoba':
+                    province_code = 'MB'
+                elif province_full_name == 'Quebec' or province_full_name == 'Québec':
+                    province_code = 'QC'
+                elif province_full_name == 'Newfoundland and Labrador':
+                    province_code = 'NL'
+                elif province_full_name == 'Yukon' or province_full_name == 'Yukon Territory':
+                    province_code = 'YT'
+                elif province_full_name == 'Northwest Territories':
+                    province_code = 'NT'
+                elif province_full_name == 'Nunavut':
+                    province_code = 'NU'
                 
                 if province_code:
                     normalized_county = normalize_county_name(county_name, province_code)

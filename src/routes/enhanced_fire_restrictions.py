@@ -3,6 +3,14 @@ import json
 from ..utils.province_detector import detect_province_and_county
 from src.utils.enhanced_nb_scraper import get_enhanced_nb_fire_report
 from src.utils.ns_scraper import get_ns_fire_report
+from src.utils.ontario_scraper import get_ontario_fire_restrictions
+from src.utils.bc_scraper import get_bc_fire_restrictions
+from src.utils.alberta_scraper import get_alberta_fire_restrictions
+from src.utils.saskatchewan_scraper import get_saskatchewan_fire_restrictions
+from src.utils.manitoba_scraper import get_manitoba_fire_restrictions
+from src.utils.quebec_scraper import get_quebec_fire_restrictions
+from src.utils.newfoundland_scraper import get_nl_fire_restrictions
+from src.utils.territories_scraper import get_territory_fire_restrictions
 import requests
 from datetime import datetime
 
@@ -19,7 +27,31 @@ def geocode_location(location_name):
             f"{location_name}, NB, Canada",
             f"{location_name}, New Brunswick, Canada",
             f"{location_name}, NS, Canada",
-            f"{location_name}, Nova Scotia, Canada"
+            f"{location_name}, Nova Scotia, Canada",
+            f"{location_name}, ON, Canada",
+            f"{location_name}, Ontario, Canada",
+            f"{location_name}, BC, Canada",
+            f"{location_name}, British Columbia, Canada",
+            f"{location_name}, AB, Canada",
+            f"{location_name}, Alberta, Canada",
+            f"{location_name}, SK, Canada",
+            f"{location_name}, Saskatchewan, Canada",
+            f"{location_name}, MB, Canada",
+            f"{location_name}, Manitoba, Canada",
+            f"{location_name}, QC, Canada",
+            f"{location_name}, Quebec, Canada",
+            f"{location_name}, Québec, Canada",
+            f"{location_name}, NL, Canada",
+            f"{location_name}, Newfoundland and Labrador, Canada",
+            f"{location_name}, Newfoundland, Canada",
+            f"{location_name}, YT, Canada",
+            f"{location_name}, Yukon, Canada",
+            f"{location_name}, Yukon Territory, Canada",
+            f"{location_name}, NT, Canada",
+            f"{location_name}, NWT, Canada",
+            f"{location_name}, Northwest Territories, Canada",
+            f"{location_name}, NU, Canada",
+            f"{location_name}, Nunavut, Canada"
         ]
         
         for query in search_queries:
@@ -97,6 +129,150 @@ def scrape_burn_restrictions(province, county=None):
             }
         }
     
+    elif province == "ON":
+        # Use Ontario scraper
+        ontario_report = get_ontario_fire_restrictions()
+        
+        # Extract the key information for API response
+        status = ontario_report.get("status", "Unknown")
+        details = ontario_report.get("details", "Unable to determine current restrictions")
+        
+        return {
+            "burn_restriction": {
+                "status": status,
+                "details": details,
+                "source": ontario_report.get("source", "Ontario Ministry of Natural Resources and Forestry"),
+                "last_updated": ontario_report.get("last_updated", datetime.now().isoformat()),
+                "enhanced_report": ontario_report  # Include full enhanced report
+            }
+        }
+    
+    elif province == "BC":
+        # Use British Columbia scraper
+        bc_report = get_bc_fire_restrictions(latitude=None, longitude=None, location_name=county)
+        
+        # Extract the key information for API response
+        status = bc_report.get("status", "Unknown")
+        details = bc_report.get("details", "Unable to determine current restrictions")
+        
+        return {
+            "burn_restriction": {
+                "status": status,
+                "details": details,
+                "source": bc_report.get("source", "BC Wildfire Service"),
+                "last_updated": bc_report.get("last_updated", datetime.now().isoformat()),
+                "enhanced_report": bc_report  # Include full enhanced report
+            }
+        }
+    
+    elif province == "AB":
+        # Use Alberta scraper
+        ab_report = get_alberta_fire_restrictions(latitude=None, longitude=None, location_name=county)
+        
+        # Extract the key information for API response
+        status = ab_report.get("status", "Unknown")
+        details = ab_report.get("details", "Unable to determine current restrictions")
+        
+        return {
+            "burn_restriction": {
+                "status": status,
+                "details": details,
+                "source": ab_report.get("source", "Alberta Wildfire"),
+                "last_updated": ab_report.get("last_updated", datetime.now().isoformat()),
+                "enhanced_report": ab_report  # Include full enhanced report
+            }
+        }
+    
+    elif province == "SK":
+        # Use Saskatchewan scraper
+        sk_report = get_saskatchewan_fire_restrictions(latitude=None, longitude=None, location_name=county)
+        
+        # Extract the key information for API response
+        status = sk_report.get("status", "Unknown")
+        details = sk_report.get("details", "Unable to determine current restrictions")
+        
+        return {
+            "burn_restriction": {
+                "status": status,
+                "details": details,
+                "source": sk_report.get("source", "Saskatchewan Public Safety Agency"),
+                "last_updated": sk_report.get("last_updated", datetime.now().isoformat()),
+                "enhanced_report": sk_report  # Include full enhanced report
+            }
+        }
+    
+    elif province == "MB":
+        # Use Manitoba scraper
+        mb_report = get_manitoba_fire_restrictions(latitude=None, longitude=None, location_name=county)
+        
+        # Extract the key information for API response
+        status = mb_report.get("status", "Unknown")
+        details = mb_report.get("details", "Unable to determine current restrictions")
+        
+        return {
+            "burn_restriction": {
+                "status": status,
+                "details": details,
+                "source": mb_report.get("source", "Manitoba Wildfire Service"),
+                "last_updated": mb_report.get("last_updated", datetime.now().isoformat()),
+                "enhanced_report": mb_report  # Include full enhanced report
+            }
+        }
+    
+    elif province == "QC":
+        # Use Quebec scraper
+        qc_report = get_quebec_fire_restrictions(latitude=None, longitude=None, location_name=county)
+        
+        # Extract the key information for API response
+        status = qc_report.get("status", "Unknown")
+        details = qc_report.get("details", "Unable to determine current restrictions")
+        
+        return {
+            "burn_restriction": {
+                "status": status,
+                "details": details,
+                "source": qc_report.get("source", "SOPFEU"),
+                "last_updated": qc_report.get("last_updated", datetime.now().isoformat()),
+                "enhanced_report": qc_report  # Include full enhanced report
+            }
+        }
+    
+    elif province == "NL":
+        # Use Newfoundland and Labrador scraper
+        nl_report = get_nl_fire_restrictions(latitude=None, longitude=None, location_name=county)
+        
+        # Extract the key information for API response
+        status = nl_report.get("status", "Unknown")
+        details = nl_report.get("details", "Unable to determine current restrictions")
+        
+        return {
+            "burn_restriction": {
+                "status": status,
+                "details": details,
+                "source": nl_report.get("source", "NL Fisheries, Forestry and Agriculture"),
+                "last_updated": nl_report.get("last_updated", datetime.now().isoformat()),
+                "enhanced_report": nl_report  # Include full enhanced report
+            }
+        }
+    
+    elif province in ["YT", "NT", "NU"]:
+        # Use territories scraper
+        territory_report = get_territory_fire_restrictions(latitude=None, longitude=None, location_name=county)
+        
+        # Extract the key information for API response
+        status = territory_report.get("status", "Unknown")
+        details = territory_report.get("details", "Unable to determine current restrictions")
+        
+        return {
+            "burn_restriction": {
+                "status": status,
+                "details": details,
+                "source": territory_report.get("source", "Canadian Territories"),
+                "last_updated": territory_report.get("last_updated", datetime.now().isoformat()),
+                "enhanced_report": territory_report  # Include full enhanced report
+            }
+        }
+    
     return None
 
 @enhanced_fire_restrictions_bp.route("/api/enhanced/burn_restrictions", methods=["GET"])
@@ -119,7 +295,7 @@ def get_enhanced_burn_restrictions():
         # Detect province and county using Nominatim
         province, county = detect_province_and_county(latitude, longitude)
         if not province:
-            return jsonify({"error": "Location is outside supported provinces (PEI, NB, NS)"}), 400
+            return jsonify({"error": "Location is outside supported provinces and territories (PEI, NB, NS, ON, BC, AB, SK, MB, QC, NL, YT, NT, NU)"}), 400
         
         if not county:
             # If Nominatim didn't return a specific county, try to get province-wide status
@@ -209,6 +385,56 @@ def get_enhanced_provinces():
                 "code": "NS", 
                 "name": "Nova Scotia",
                 "features": ["county_detection_via_geolocator", "basic_restrictions"]
+            },
+            {
+                "code": "ON", 
+                "name": "Ontario",
+                "features": ["county_detection_via_geolocator", "fire_zone_restrictions"]
+            },
+            {
+                "code": "BC", 
+                "name": "British Columbia",
+                "features": ["fire_centre_detection", "category_based_restrictions", "real_time_data"]
+            },
+            {
+                "code": "AB", 
+                "name": "Alberta",
+                "features": ["region_detection", "tiered_restriction_system", "forest_protection_area"]
+            },
+            {
+                "code": "SK", 
+                "name": "Saskatchewan",
+                "features": ["municipality_detection", "multi_jurisdictional_system", "provincial_municipal_coordination"]
+            },
+            {
+                "code": "MB", 
+                "name": "Manitoba",
+                "features": ["dual_jurisdiction_system", "seasonal_restrictions", "municipal_coordination"]
+            },
+            {
+                "code": "QC", 
+                "name": "Quebec",
+                "features": ["sopfeu_system", "fire_danger_index", "zone_based_restrictions", "bilingual_service"]
+            },
+            {
+                "code": "NL", 
+                "name": "Newfoundland and Labrador",
+                "features": ["province_wide_bans", "daily_hazard_updates", "enhanced_penalties", "seasonal_variations"]
+            },
+            {
+                "code": "YT", 
+                "name": "Yukon Territory",
+                "features": ["multi_level_restrictions", "territory_wide_bans", "seasonal_fire_management"]
+            },
+            {
+                "code": "NT", 
+                "name": "Northwest Territories",
+                "features": ["fire_danger_ratings", "community_restrictions", "territorial_coordination"]
+            },
+            {
+                "code": "NU", 
+                "name": "Nunavut",
+                "features": ["community_management", "burn_permits", "arctic_fire_conditions"]
             }
         ]
     })

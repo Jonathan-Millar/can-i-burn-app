@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canadian Fire Watch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.1) 10px,
+                rgba(255, 255, 255, 0.1) 20px
+            );
+            animation: move 20s linear infinite;
+        }
+
+        @keyframes move {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .province-selector {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .province-selector h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .province-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .province-btn {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .province-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .province-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .province-btn.active::before {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 0.8rem;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .coordinates-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .or-divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .or-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #dee2e6;
+            z-index: 1;
+        }
+
+        .or-divider span {
+            background: #f8f9fa;
+            padding: 0 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .status-no-burning {
+            background: #dc3545;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+        }
+
+        .status-permitted {
+            background: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+        }
+
+        .status-restricted {
+            background: #ffc107;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .province-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .result-details {
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .detail-value {
+            color: #6c757d;
+            text-align: right;
+        }
+
+        .error {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .error.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .quick-locations {
+            background: #e3f2fd;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #bbdefb;
+        }
+
+        .quick-locations h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1565c0;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .location-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .location-btn {
+            background: white;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            color: #1565c0;
+        }
+
+        .location-btn:hover {
+            background: #1565c0;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .coordinates-row {
+                grid-template-columns: 1fr;
+            }
+
+            .province-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .input-section, .province-selector, .quick-locations {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 Canadian Fire Watch</h1>
+            <p>Check current fire burn restrictions across all Canadian provinces and territories</p>
+        </div>
+        
+        <div class="content">
+            <div class="province-selector">
+                <h3>Select Province/Territory (Auto-detected from location)</h3>
+                <div class="province-buttons">
+                    <button class="province-btn" data-province="PEI">
+                        Prince Edward Island
+                    </button>
+                    <button class="province-btn" data-province="NB">
+                        New Brunswick
+                    </button>
+                    <button class="province-btn" data-province="NS">
+                        Nova Scotia
+                    </button>
+                    <button class="province-btn" data-province="ON">
+                        Ontario
+                    </button>
+                    <button class="province-btn" data-province="QC">
+                        Quebec
+                    </button>
+                    <button class="province-btn" data-province="NL">
+                        Newfoundland and Labrador
+                    </button>
+                    <button class="province-btn" data-province="BC">
+                        British Columbia
+                    </button>
+                    <button class="province-btn" data-province="AB">
+                        Alberta
+                    </button>
+                    <button class="province-btn" data-province="SK">
+                        Saskatchewan
+                    </button>
+                    <button class="province-btn" data-province="MB">
+                        Manitoba
+                    </button>
+                    <button class="province-btn" data-province="YT">
+                        Yukon Territory
+                    </button>
+                    <button class="province-btn" data-province="NT">
+                        Northwest Territories
+                    </button>
+                    <button class="province-btn" data-province="NU">
+                        Nunavut
+                    </button>
+                </div>
+            </div>
+
+            <div class="quick-locations">
+                <h4>Quick Location Search</h4>
+                <div class="location-buttons">
+                    <!-- Atlantic Canada -->
+                    <button class="location-btn" data-location="Summerside">Summerside, PEI</button>
+                    <button class="location-btn" data-location="Charlottetown">Charlottetown, PEI</button>
+                    <button class="location-btn" data-location="Fredericton">Fredericton, NB</button>
+                    <button class="location-btn" data-location="Moncton">Moncton, NB</button>
+                    <button class="location-btn" data-location="Saint John">Saint John, NB</button>
+                    <button class="location-btn" data-location="Halifax">Halifax, NS</button>
+                    <button class="location-btn" data-location="Sydney">Sydney, NS</button>
+                    <button class="location-btn" data-location="Truro">Truro, NS</button>
+                    <button class="location-btn" data-location="St. John's">St. John's, NL</button>
+                    <button class="location-btn" data-location="Corner Brook">Corner Brook, NL</button>
+                    
+                    <!-- Central Canada -->
+                    <button class="location-btn" data-location="Toronto">Toronto, ON</button>
+                    <button class="location-btn" data-location="Ottawa">Ottawa, ON</button>
+                    <button class="location-btn" data-location="Thunder Bay">Thunder Bay, ON</button>
+                    <button class="location-btn" data-location="Montreal">Montreal, QC</button>
+                    <button class="location-btn" data-location="Quebec City">Quebec City, QC</button>
+                    <button class="location-btn" data-location="Gatineau">Gatineau, QC</button>
+                    
+                    <!-- Western Canada -->
+                    <button class="location-btn" data-location="Winnipeg">Winnipeg, MB</button>
+                    <button class="location-btn" data-location="Brandon">Brandon, MB</button>
+                    <button class="location-btn" data-location="Saskatoon">Saskatoon, SK</button>
+                    <button class="location-btn" data-location="Regina">Regina, SK</button>
+                    <button class="location-btn" data-location="Calgary">Calgary, AB</button>
+                    <button class="location-btn" data-location="Edmonton">Edmonton, AB</button>
+                    <button class="location-btn" data-location="Vancouver">Vancouver, BC</button>
+                    <button class="location-btn" data-location="Victoria">Victoria, BC</button>
+                    
+                    <!-- Territories -->
+                    <button class="location-btn" data-location="Whitehorse">Whitehorse, YT</button>
+                    <button class="location-btn" data-location="Yellowknife">Yellowknife, NT</button>
+                    <button class="location-btn" data-location="Iqaluit">Iqaluit, NU</button>
+                </div>
+            </div>
+            
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="location">Location Name</label>
+                    <input type="text" id="location" placeholder="e.g., Vancouver, Calgary, Toronto, Montreal, Halifax, Yellowknife">
+                </div>
+                
+                <div class="or-divider">
+                    <span>OR</span>
+                </div>
+                
+                <div class="coordinates-row">
+                    <div class="input-group">
+                        <label for="latitude">Latitude</label>
+                        <input type="number" id="latitude" step="any" placeholder="e.g., 46.3969">
+                    </div>
+                    <div class="input-group">
+                        <label for="longitude">Longitude</label>
+                        <input type="number" id="longitude" step="any" placeholder="e.g., -63.7981">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <button class="btn" onclick="checkRestrictions()">
+                        Check Fire Restrictions
+                    </button>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                Checking fire restrictions...
+            </div>
+            
+            <div class="result" id="result">
+                <div class="result-header">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <div>
+                        <div class="result-title" id="resultTitle"></div>
+                    </div>
+                </div>
+                <div class="result-details" id="resultDetails"></div>
+            </div>
+            
+            <div class="error" id="error"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedProvince = null;
+
+        // Province selection
+        document.querySelectorAll('.province-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.province-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedProvince = this.dataset.province;
+            });
+        });
+
+        // Quick location buttons
+        document.querySelectorAll('.location-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('location').value = this.dataset.location;
+                document.getElementById('latitude').value = '';
+                document.getElementById('longitude').value = '';
+                checkRestrictions();
+            });
+        });
+
+        async function checkRestrictions() {
+            const location = document.getElementById('location').value.trim();
+            const latitude = document.getElementById('latitude').value.trim();
+            const longitude = document.getElementById('longitude').value.trim();
+            
+            // Validate input
+            if (!location && (!latitude || !longitude)) {
+                showError('Please provide either a location name or both latitude and longitude coordinates.');
+                return;
+            }
+            
+            // Show loading state
+            showLoading(true);
+            hideResult();
+            hideError();
+            
+            try {
+                let url = '/api/enhanced/burn_restrictions?';
+                if (location) {
+                    url += `location=${encodeURIComponent(location)}`;
+                } else {
+                    url += `latitude=${latitude}&longitude=${longitude}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch fire restrictions');
+                }
+                
+                // Auto-select province based on result
+                if (data.province) {
+                    document.querySelectorAll('.province-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        if (btn.dataset.province === data.province) {
+                            btn.classList.add('active');
+                        }
+                    });
+                    selectedProvince = data.province;
+                }
+                
+                showResult(data);
+                
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const btn = document.querySelector('.btn');
+            
+            if (show) {
+                loading.style.display = 'block';
+                btn.disabled = true;
+                btn.textContent = 'Checking...';
+            } else {
+                loading.style.display = 'none';
+                btn.disabled = false;
+                btn.textContent = 'Check Fire Restrictions';
+            }
+        }
+        
+        function showResult(data) {
+            const result = document.getElementById('result');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            // Set status indicator color
+            const status = data.burn_restriction.status.toLowerCase();
+            statusIndicator.className = 'status-indicator';
+            if (status.includes('no burning') || status.includes('banned')) {
+                statusIndicator.classList.add('status-no-burning');
+            } else if (status.includes('permitted') && !status.includes('restricted')) {
+                statusIndicator.classList.add('status-permitted');
+            } else {
+                statusIndicator.classList.add('status-restricted');
+            }
+            
+            // Set title with province badge
+            let provinceName;
+            if (data.province === 'PEI') {
+                provinceName = 'Prince Edward Island';
+            } else if (data.province === 'NB') {
+                provinceName = 'New Brunswick';
+            } else if (data.province === 'NS') {
+                provinceName = 'Nova Scotia';
+            } else if (data.province === 'ON') {
+                provinceName = 'Ontario';
+            } else if (data.province === 'QC') {
+                provinceName = 'Quebec';
+            } else if (data.province === 'NL') {
+                provinceName = 'Newfoundland and Labrador';
+            } else if (data.province === 'BC') {
+                provinceName = 'British Columbia';
+            } else if (data.province === 'AB') {
+                provinceName = 'Alberta';
+            } else if (data.province === 'SK') {
+                provinceName = 'Saskatchewan';
+            } else if (data.province === 'MB') {
+                provinceName = 'Manitoba';
+            } else if (data.province === 'YT') {
+                provinceName = 'Yukon Territory';
+            } else if (data.province === 'NT') {
+                provinceName = 'Northwest Territories';
+            } else if (data.province === 'NU') {
+                provinceName = 'Nunavut';
+            } else {
+                provinceName = data.province;
+            }
+            
+            const countyText = data.county ? `${data.county} County` : 'Province-wide';
+            resultTitle.innerHTML = `${data.burn_restriction.status} - ${countyText}<span class="province-badge">${provinceName}</span>`;
+            
+            // Set details
+            const lastUpdated = new Date(data.burn_restriction.last_updated).toLocaleString();
+            const source = data.burn_restriction.source || 'Fire Watch System';
+            
+            resultDetails.innerHTML = `
+                <div class="detail-item">
+                    <span class="detail-label">Province:</span>
+                    <span class="detail-value">${provinceName}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">County:</span>
+                    <span class="detail-value">${data.county || 'Province-wide'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">${data.burn_restriction.status}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Details:</span>
+                    <span class="detail-value">${data.burn_restriction.details}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Coordinates:</span>
+                    <span class="detail-value">${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Source:</span>
+                    <span class="detail-value">${source}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Last Updated:</span>
+                    <span class="detail-value">${lastUpdated}</span>
+                </div>
+            `;
+            
+            result.classList.add('show');
+        }
+        
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.classList.add('show');
+        }
+        
+        function hideResult() {
+            const result = document.getElementById('result');
+            result.classList.remove('show');
+        }
+        
+        function hideError() {
+            const error = document.getElementById('error');
+            error.classList.remove('show');
+        }
+        
+        // Allow Enter key to trigger search
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkRestrictions();
+            }
+        });
+        
+        // Pre-fill Summerside coordinates for testing
+        document.getElementById('latitude').value = '46.3969';
+        document.getElementById('longitude').value = '-63.7981';
+    </script>
+</body>
+</html>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.1) 10px,
+                rgba(255, 255, 255, 0.1) 20px
+            );
+            animation: move 20s linear infinite;
+        }
+
+        @keyframes move {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .coordinates-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .or-divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .or-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #dee2e6;
+            z-index: 1;
+        }
+
+        .or-divider span {
+            background: #f8f9fa;
+            padding: 0 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .status-no-burning {
+            background: #dc3545;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+        }
+
+        .status-permitted {
+            background: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+        }
+
+        .status-restricted {
+            background: #ffc107;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .result-details {
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .detail-value {
+            color: #6c757d;
+            text-align: right;
+        }
+
+        .error {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .error.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .coordinates-row {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .input-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 Canadian Fire Watch</h1>
+            <p>Check current fire burn restrictions across all Canadian provinces and territories</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="location">Location Name</label>
+                    <input type="text" id="location" placeholder="e.g., Summerside, Charlottetown, Fredericton, Moncton, Halifax, Sydney">
+                </div>
+                
+                <div class="or-divider">
+                    <span>OR</span>
+                </div>
+                
+                <div class="coordinates-row">
+                    <div class="input-group">
+                        <label for="latitude">Latitude</label>
+                        <input type="number" id="latitude" step="any" placeholder="e.g., 46.3969">
+                    </div>
+                    <div class="input-group">
+                        <label for="longitude">Longitude</label>
+                        <input type="number" id="longitude" step="any" placeholder="e.g., -63.7981">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <button class="btn" onclick="checkRestrictions()">
+                        Check Fire Restrictions
+                    </button>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                Checking fire restrictions...
+            </div>
+            
+            <div class="result" id="result">
+                <div class="result-header">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <div class="result-title" id="resultTitle"></div>
+                </div>
+                <div class="result-details" id="resultDetails"></div>
+            </div>
+            
+            <div class="error" id="error"></div>
+        </div>
+    </div>
+
+    <script>
+        async function checkRestrictions() {
+            const location = document.getElementById('location').value.trim();
+            const latitude = document.getElementById('latitude').value.trim();
+            const longitude = document.getElementById('longitude').value.trim();
+            
+            // Validate input
+            if (!location && (!latitude || !longitude)) {
+                showError('Please provide either a location name or both latitude and longitude coordinates.');
+                return;
+            }
+            
+            // Show loading state
+            showLoading(true);
+            hideResult();
+            hideError();
+            
+            try {
+                let url = '/api/enhanced/burn_restrictions?';
+                if (location) {
+                    url += `location=${encodeURIComponent(location)}`;
+                } else {
+                    url += `latitude=${latitude}&longitude=${longitude}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch fire restrictions');
+                }
+                
+                showResult(data);
+                
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const btn = document.querySelector('.btn');
+            
+            if (show) {
+                loading.style.display = 'block';
+                btn.disabled = true;
+                btn.textContent = 'Checking...';
+            } else {
+                loading.style.display = 'none';
+                btn.disabled = false;
+                btn.textContent = 'Check Fire Restrictions';
+            }
+        }
+        
+        function showResult(data) {
+            const result = document.getElementById('result');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            // Set status indicator color
+            const status = data.burn_restriction.status.toLowerCase();
+            statusIndicator.className = 'status-indicator';
+            if (status.includes('no burning') || status.includes('banned')) {
+                statusIndicator.classList.add('status-no-burning');
+            } else if (status.includes('permitted')) {
+                statusIndicator.classList.add('status-permitted');
+            } else {
+                statusIndicator.classList.add('status-restricted');
+            }
+            
+            // Set title
+            let provinceName;
+            if (data.province === 'PEI') {
+                provinceName = 'Prince Edward Island';
+            } else if (data.province === 'NB') {
+                provinceName = 'New Brunswick';
+            } else if (data.province === 'NS') {
+                provinceName = 'Nova Scotia';
+            } else if (data.province === 'ON') {
+                provinceName = 'Ontario';
+            } else if (data.province === 'QC') {
+                provinceName = 'Quebec';
+            } else if (data.province === 'NL') {
+                provinceName = 'Newfoundland and Labrador';
+            } else if (data.province === 'BC') {
+                provinceName = 'British Columbia';
+            } else if (data.province === 'AB') {
+                provinceName = 'Alberta';
+            } else if (data.province === 'SK') {
+                provinceName = 'Saskatchewan';
+            } else if (data.province === 'MB') {
+                provinceName = 'Manitoba';
+            } else if (data.province === 'YT') {
+                provinceName = 'Yukon Territory';
+            } else if (data.province === 'NT') {
+                provinceName = 'Northwest Territories';
+            } else if (data.province === 'NU') {
+                provinceName = 'Nunavut';
+            } else {
+                provinceName = data.province;
+            }
+            
+            const countyText = data.county ? `${data.county} County` : 'Province-wide';
+            resultTitle.textContent = `${data.burn_restriction.status} - ${countyText} (${provinceName})`;
+            
+            // Set details
+            const lastUpdated = new Date(data.burn_restriction.last_updated).toLocaleString();
+            const source = data.burn_restriction.source || 'Fire Watch System';
+            
+            resultDetails.innerHTML = `
+                <div class="detail-item">
+                    <span class="detail-label">Province:</span>
+                    <span class="detail-value">${provinceName}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">County:</span>
+                    <span class="detail-value">${data.county || 'Province-wide'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">${data.burn_restriction.status}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Details:</span>
+                    <span class="detail-value">${data.burn_restriction.details}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Coordinates:</span>
+                    <span class="detail-value">${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Source:</span>
+                    <span class="detail-value">${source}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Last Updated:</span>
+                    <span class="detail-value">${lastUpdated}</span>
+                </div>
+            `;
+            
+            result.classList.add('show');
+        }
+        
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.classList.add('show');
+        }
+        
+        function hideResult() {
+            const result = document.getElementById('result');
+            result.classList.remove('show');
+        }
+        
+        function hideError() {
+            const error = document.getElementById('error');
+            error.classList.remove('show');
+        }
+        
+        // Allow Enter key to trigger search
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkRestrictions();
+            }
+        });
+        
+        // Pre-fill Summerside coordinates for testing
+        document.getElementById('latitude').value = '46.3969';
+        document.getElementById('longitude').value = '-63.7981';
+    </script>
+</body>
+</html>
+
