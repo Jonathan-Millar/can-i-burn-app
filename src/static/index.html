@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PEI Fire Watch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.1) 10px,
+                rgba(255, 255, 255, 0.1) 20px
+            );
+            animation: move 20s linear infinite;
+        }
+
+        @keyframes move {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .coordinates-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .or-divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .or-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #dee2e6;
+            z-index: 1;
+        }
+
+        .or-divider span {
+            background: #f8f9fa;
+            padding: 0 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .status-no-burning {
+            background: #dc3545;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+        }
+
+        .status-permitted {
+            background: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+        }
+
+        .status-restricted {
+            background: #ffc107;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .result-details {
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .detail-value {
+            color: #6c757d;
+            text-align: right;
+        }
+
+        .error {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .error.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .coordinates-row {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .input-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 PEI Fire Watch</h1>
+            <p>Check current fire burn restrictions for Prince Edward Island</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="location">Location Name</label>
+                    <input type="text" id="location" placeholder="e.g., Summerside, Charlottetown">
+                </div>
+                
+                <div class="or-divider">
+                    <span>OR</span>
+                </div>
+                
+                <div class="coordinates-row">
+                    <div class="input-group">
+                        <label for="latitude">Latitude</label>
+                        <input type="number" id="latitude" step="any" placeholder="e.g., 46.3969">
+                    </div>
+                    <div class="input-group">
+                        <label for="longitude">Longitude</label>
+                        <input type="number" id="longitude" step="any" placeholder="e.g., -63.7981">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <button class="btn" onclick="checkRestrictions()">
+                        Check Fire Restrictions
+                    </button>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                Checking fire restrictions...
+            </div>
+            
+            <div class="result" id="result">
+                <div class="result-header">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <div class="result-title" id="resultTitle"></div>
+                </div>
+                <div class="result-details" id="resultDetails"></div>
+            </div>
+            
+            <div class="error" id="error"></div>
+        </div>
+    </div>
+
+    <script>
+        async function checkRestrictions() {
+            const location = document.getElementById('location').value.trim();
+            const latitude = document.getElementById('latitude').value.trim();
+            const longitude = document.getElementById('longitude').value.trim();
+            
+            // Validate input
+            if (!location && (!latitude || !longitude)) {
+                showError('Please provide either a location name or both latitude and longitude coordinates.');
+                return;
+            }
+            
+            // Show loading state
+            showLoading(true);
+            hideResult();
+            hideError();
+            
+            try {
+                let url = '/api/burn_restrictions?';
+                if (location) {
+                    url += `location=${encodeURIComponent(location)}`;
+                } else {
+                    url += `latitude=${latitude}&longitude=${longitude}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch fire restrictions');
+                }
+                
+                showResult(data);
+                
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const btn = document.querySelector('.btn');
+            
+            if (show) {
+                loading.style.display = 'block';
+                btn.disabled = true;
+                btn.textContent = 'Checking...';
+            } else {
+                loading.style.display = 'none';
+                btn.disabled = false;
+                btn.textContent = 'Check Fire Restrictions';
+            }
+        }
+        
+        function showResult(data) {
+            const result = document.getElementById('result');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            // Set status indicator color
+            const status = data.burn_restriction.status.toLowerCase();
+            statusIndicator.className = 'status-indicator';
+            if (status.includes('no burning') || status.includes('banned')) {
+                statusIndicator.classList.add('status-no-burning');
+            } else if (status.includes('permitted')) {
+                statusIndicator.classList.add('status-permitted');
+            } else {
+                statusIndicator.classList.add('status-restricted');
+            }
+            
+            // Set title
+            resultTitle.textContent = `${data.burn_restriction.status} - ${data.county} County`;
+            
+            // Set details
+            const lastUpdated = new Date(data.burn_restriction.last_updated).toLocaleString();
+            resultDetails.innerHTML = `
+                <div class="detail-item">
+                    <span class="detail-label">County:</span>
+                    <span class="detail-value">${data.county}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">${data.burn_restriction.status}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Details:</span>
+                    <span class="detail-value">${data.burn_restriction.details}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Coordinates:</span>
+                    <span class="detail-value">${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Last Updated:</span>
+                    <span class="detail-value">${lastUpdated}</span>
+                </div>
+            `;
+            
+            result.classList.add('show');
+        }
+        
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.classList.add('show');
+        }
+        
+        function hideResult() {
+            const result = document.getElementById('result');
+            result.classList.remove('show');
+        }
+        
+        function hideError() {
+            const error = document.getElementById('error');
+            error.classList.remove('show');
+        }
+        
+        // Allow Enter key to trigger search
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkRestrictions();
+            }
+        });
+        
+        // Pre-fill Summerside coordinates for testing
+        document.getElementById('latitude').value = '46.3969';
+        document.getElementById('longitude').value = '-63.7981';
+    </script>
+</body>
+</html>
+
