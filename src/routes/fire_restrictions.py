@@ -3,8 +3,8 @@ import os
 import requests
 from datetime import datetime
 from flask import Blueprint, request, jsonify
-from shapely.geometry import Point, shape
 from geopy.geocoders import Nominatim
+from src.utils.geo_utils import get_county_from_coordinates
 
 fire_restrictions_bp = Blueprint('fire_restrictions', __name__)
 
@@ -13,21 +13,11 @@ GEOJSON_PATH = os.path.join(os.path.dirname(__file__), '..', 'pei_county_zones.g
 with open(GEOJSON_PATH, 'r') as f:
     county_data = json.load(f)
 
-def get_county_from_coordinates(latitude, longitude):
+def get_county_from_coordinates_wrapper(latitude, longitude):
     """
     Determine which PEI county contains the given coordinates.
     """
-    point = Point(longitude, latitude)
-    
-    for feature in county_data['features']:
-        county_shape = shape(feature['geometry'])
-        if county_shape.contains(point):
-            # Extract county name from properties
-            properties = feature['properties']
-            county_name = properties.get('KEYWORD', 'Unknown')
-            return county_name
-    
-    return None
+    return get_county_from_coordinates(latitude, longitude, county_data)
 
 def scrape_burn_restrictions():
     """
@@ -109,7 +99,7 @@ def get_burn_restrictions():
             }), 400
         
         # Get county for the coordinates
-        county = get_county_from_coordinates(latitude, longitude)
+        county = get_county_from_coordinates_wrapper(latitude, longitude)
         if not county:
             return jsonify({
                 'error': 'Could not determine county for the given coordinates'
