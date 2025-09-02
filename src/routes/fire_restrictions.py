@@ -5,10 +5,12 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify
 from geopy.geocoders import Nominatim
 from src.utils.geo_utils import get_county_from_coordinates
+from src.utils.province_detector import detect_province_and_county
+from src.utils.nb_scraper import scrape_nb_burn_restrictions
 
 fire_restrictions_bp = Blueprint('fire_restrictions', __name__)
 
-# Load county GeoJSON data
+# Load PEI county data
 GEOJSON_PATH = os.path.join(os.path.dirname(__file__), '..', 'pei_county_zones.geojson')
 with open(GEOJSON_PATH, 'r') as f:
     county_data = json.load(f)
@@ -19,17 +21,17 @@ def get_county_from_coordinates_wrapper(latitude, longitude):
     """
     return get_county_from_coordinates(latitude, longitude, county_data)
 
-def scrape_burn_restrictions():
+def scrape_burn_restrictions(province='PEI'):
     """
-    Scrape current burn restrictions from the PEI government website.
+    Scrape current burn restrictions for the specified province.
+    For PEI, returns simulated data (ready for real integration).
+    For NB, scrapes from the official Fire Watch page.
     """
-    try:
-        # The burn restrictions page URL
-        url = "https://www.princeedwardisland.ca/en/feature/burning-restrictions"
-        
-        # For now, we'll return mock data based on what we observed
-        # In a real implementation, we would parse the HTML or use an API
-        restrictions = {
+    if province == 'NB':
+        return scrape_nb_burn_restrictions()
+    else:  # PEI
+        # Simulated PEI data - in production, this would scrape from PEI's official source
+        return {
             'PRINCE': {
                 'status': 'No Burning',
                 'details': 'Fire closure order in place - all fires banned',
@@ -46,22 +48,30 @@ def scrape_burn_restrictions():
                 'last_updated': datetime.now().isoformat()
             }
         }
-        
-        return restrictions
-    except Exception as e:
-        print(f"Error scraping burn restrictions: {e}")
-        return {}
 
 def geocode_location(location_name):
     """
     Convert a location name to GPS coordinates.
+    Tries both PEI and NB contexts.
     """
     try:
-        geolocator = Nominatim(user_agent="pei_fire_watch")
-        # Append ", PEI, Canada" to improve accuracy
-        location = geolocator.geocode(f"{location_name}, PEI, Canada")
+        geolocator = Nominatim(user_agent="fire_watch_app")
+        
+        # Try with PEI context first
+        location = geolocator.geocode(f"{location_name}, PEI, Canada", timeout=5)
         if location:
             return location.latitude, location.longitude
+        
+        # Try with New Brunswick context
+        location = geolocator.geocode(f"{location_name}, New Brunswick, Canada", timeout=5)
+        if location:
+            return location.latitude, location.longitude
+            
+        # Try without province context
+        location = geolocator.geocode(f"{location_name}, Canada", timeout=5)
+        if location:
+            return location.latitude, location.longitude
+            
         return None, None
     except Exception as e:
         print(f"Error geocoding location: {e}")
@@ -70,79 +80,126 @@ def geocode_location(location_name):
 @fire_restrictions_bp.route('/burn_restrictions', methods=['GET'])
 def get_burn_restrictions():
     """
-    API endpoint to get burn restrictions for a location.
-    Accepts either latitude/longitude or location name.
+    Get burn restrictions for a given location or coordinates.
+    Supports both PEI and New Brunswick.
     """
     try:
-        latitude = request.args.get('latitude', type=float)
-        longitude = request.args.get('longitude', type=float)
-        location_name = request.args.get('location')
+        # Get parameters
+        location = request.args.get('location')
+        latitude = request.args.get('latitude')
+        longitude = request.args.get('longitude')
         
-        # If location name is provided, geocode it first
-        if location_name and (latitude is None or longitude is None):
-            latitude, longitude = geocode_location(location_name)
-            if latitude is None or longitude is None:
-                return jsonify({
-                    'error': f'Could not geocode location: {location_name}'
-                }), 400
-        
-        # Validate coordinates
-        if latitude is None or longitude is None:
+        # Validate input
+        if not location and (not latitude or not longitude):
             return jsonify({
                 'error': 'Please provide either latitude/longitude or location name'
             }), 400
         
-        # Check if coordinates are within PEI bounds (approximate)
-        if not (45.9 <= latitude <= 47.1 and -64.5 <= longitude <= -61.9):
+        # If location name provided, geocode it
+        if location:
+            lat, lon = geocode_location(location)
+            if lat is None or lon is None:
+                return jsonify({
+                    'error': f'Could not find coordinates for location: {location}'
+                }), 400
+            latitude, longitude = lat, lon
+        else:
+            # Convert string coordinates to float
+            try:
+                latitude = float(latitude)
+                longitude = float(longitude)
+            except ValueError:
+                return jsonify({
+                    'error': 'Invalid latitude or longitude format'
+                }), 400
+        
+        # Detect province and county
+        province, county = detect_province_and_county(latitude, longitude)
+        
+        if not province:
             return jsonify({
-                'error': 'Coordinates appear to be outside of PEI'
+                'error': 'Coordinates appear to be outside of supported provinces (PEI, NB)'
             }), 400
         
-        # Get county for the coordinates
-        county = get_county_from_coordinates_wrapper(latitude, longitude)
         if not county:
             return jsonify({
-                'error': 'Could not determine county for the given coordinates'
+                'error': f'Could not determine county for the given coordinates in {province}'
             }), 404
         
-        # Get current burn restrictions
-        restrictions = scrape_burn_restrictions()
-        county_restriction = restrictions.get(county, {
-            'status': 'Unknown',
-            'details': 'Unable to retrieve restriction information',
-            'last_updated': datetime.now().isoformat()
-        })
+        # Get burn restrictions for the province
+        restrictions_data = scrape_burn_restrictions(province)
+        
+        if province == 'PEI':
+            # PEI has county-specific restrictions
+            if county not in restrictions_data:
+                return jsonify({
+                    'error': f'No restriction data available for {county} county'
+                }), 404
+            
+            burn_restriction = restrictions_data[county]
+        else:  # New Brunswick
+            # NB has province-wide restrictions
+            burn_restriction = restrictions_data
         
         return jsonify({
+            'province': province,
+            'county': county,
             'latitude': latitude,
             'longitude': longitude,
-            'county': county,
-            'burn_restriction': county_restriction
+            'burn_restriction': burn_restriction
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            'error': f'Internal server error: {str(e)}'
+        }), 500
 
 @fire_restrictions_bp.route('/counties', methods=['GET'])
 def get_counties():
     """
-    API endpoint to get all PEI counties.
+    Get list of available counties for both provinces.
     """
     try:
-        counties = []
-        seen_counties = set()
+        # PEI counties
+        pei_counties = []
         for feature in county_data['features']:
             properties = feature['properties']
-            county_name = properties.get('KEYWORD', 'Unknown').strip()
-            if county_name and county_name != 'Unknown' and county_name not in seen_counties:
-                counties.append({
-                    'name': county_name,
-                    'id': county_name.lower()
-                })
-                seen_counties.add(county_name)
+            county_name = properties.get('KEYWORD', '').strip()
+            if county_name and county_name not in pei_counties:
+                pei_counties.append(county_name)
         
-        return jsonify({'counties': counties})
+        # Load NB county data
+        nb_geojson_path = os.path.join(os.path.dirname(__file__), '..', 'new_brunswick_county_zones.geojson')
+        with open(nb_geojson_path, 'r') as f:
+            nb_county_data = json.load(f)
+        
+        nb_counties = []
+        for feature in nb_county_data['features']:
+            properties = feature['properties']
+            county_name = properties.get('eng_name', '').strip()
+            if county_name and county_name not in nb_counties:
+                nb_counties.append(county_name)
+        
+        return jsonify({
+            'PEI': sorted(pei_counties),
+            'NB': sorted(nb_counties)
+        })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            'error': f'Error retrieving counties: {str(e)}'
+        }), 500
+
+@fire_restrictions_bp.route('/provinces', methods=['GET'])
+def get_provinces():
+    """
+    Get list of supported provinces.
+    """
+    return jsonify({
+        'provinces': ['PEI', 'NB'],
+        'full_names': {
+            'PEI': 'Prince Edward Island',
+            'NB': 'New Brunswick'
+        }
+    })
 
