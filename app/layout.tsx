@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import '../styles/scrollbar.css'
 
 const inter = Inter({ subsets: ['latin'] })
 const holtwoodOneSC = {
@@ -10,8 +11,12 @@ const holtwoodOneSC = {
 }
 
 export const metadata: Metadata = {
-  title: 'Canada Fire Watch - Kibo UI',
-  description: 'A comprehensive web application for Canadian fire burn restrictions using Kibo UI components',
+  title: 'Can I Burn?',
+  description: 'A comprehensive web application for Canadian fire burn restrictions',
+  icons: {
+    icon: '/icon',
+    apple: '/apple-icon',
+  },
 }
 
 export default function RootLayout({

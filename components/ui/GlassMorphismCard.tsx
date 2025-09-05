@@ -101,12 +101,12 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
       {/* Main card */}
       <motion.div
         className={cn(
-          "relative bg-black/40 backdrop-blur-xl border rounded-3xl overflow-hidden",
+          "relative bg-black/60 backdrop-blur-xl border rounded-3xl overflow-hidden",
           statusStyle.border
         )}
       >
         {/* Glass morphism overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent" />
         
         {/* Status gradient overlay */}
         <motion.div
@@ -126,7 +126,6 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
           <motion.button
             onClick={onClose}
             className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-all duration-200"
-            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
             <X className="w-4 h-4" />

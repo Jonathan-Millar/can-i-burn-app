@@ -74,16 +74,15 @@ export const EnhancedReportCard: React.FC<EnhancedReportCardProps> = ({
       transition={{ duration: 0.6, delay: 0.2 }}
     >
       {/* Main Enhanced Report Card */}
-      <div className="relative bg-black/30 backdrop-blur-xl border border-blue-500/20 rounded-2xl overflow-hidden">
+      <div className="relative bg-black/50 backdrop-blur-xl border border-blue-500/20 rounded-2xl overflow-hidden">
         {/* Header gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-indigo-500/10 opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-indigo-500/20 opacity-70" />
         
         <div className="relative p-6 space-y-6">
           {/* Header */}
           <motion.div 
             className="flex items-center justify-between cursor-pointer"
             onClick={() => setIsExpanded(!isExpanded)}
-            whileHover={{ scale: 1.01 }}
           >
             <div className="flex items-center space-x-3">
               <motion.div 
@@ -177,7 +176,6 @@ export const EnhancedReportCard: React.FC<EnhancedReportCardProps> = ({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        whileHover={{ scale: 1.02 }}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <h5 className="text-white font-medium text-sm">{county}</h5>

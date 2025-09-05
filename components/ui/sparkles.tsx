@@ -270,10 +270,6 @@ export const SparklesCore = (props: ParticlesProps) => {
                 type: "circle",
               },
               size: {
-                random: {
-                  enable: true,
-                  minimumValue: minSize || 1,
-                },
                 value: {
                   min: minSize || 1,
                   max: maxSize || 3,

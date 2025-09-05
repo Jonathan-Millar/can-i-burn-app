@@ -68,7 +68,6 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
         style={{
           transformStyle: "preserve-3d",
         }}
-        whileHover={{ scale: scale }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="relative"
       >

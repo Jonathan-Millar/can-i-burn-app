@@ -128,7 +128,7 @@ export const LocationPermissionCard: React.FC<LocationPermissionCardProps> = ({
             <Button
               onClick={onDismiss}
               variant="outline"
-              className="border-white/30 text-white hover:bg-white/10 px-6 py-2 rounded-lg font-medium transition-all duration-200"
+              className="border-white/30 text-slate-700 hover:bg-white/10 px-6 py-2 rounded-lg font-medium transition-all duration-200"
             >
               Skip
             </Button>

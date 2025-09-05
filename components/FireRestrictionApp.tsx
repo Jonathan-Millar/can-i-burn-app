@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MapPin, Search, Flame, AlertTriangle, CheckCircle, Ban, HelpCircle } from 'lucide-react';
+// Removed PerfectScrollbar imports
 import { PlaceholdersAndVanishInput } from './ui/placeholders-and-vanish-input';
 import { LoaderFour } from './ui/loader';
 import { GlassMorphismCard } from './ui/GlassMorphismCard';
@@ -213,7 +214,7 @@ export const FireRestrictionApp: React.FC = () => {
   }, [locationTimeout]);
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative">
       {/* Background Image */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
@@ -228,244 +229,304 @@ export const FireRestrictionApp: React.FC = () => {
       {/* Overlay for better text readability */}
       <div className="fixed inset-0 bg-black/40" />
       
-      <div className="relative z-20 max-w-4xl mx-auto p-4 min-h-screen flex flex-col">
-        {/* Header */}
-        <motion.div
-          className="text-center mb-8 pt-8"
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
+      {/* Scrollable Content Area */}
+      <div className="relative z-20 min-h-screen overflow-y-auto overflow-x-hidden scrollbar-custom pb-32">
+        <div className="max-w-4xl mx-auto p-4">
+          {/* Header - now scrolls with content */}
           <motion.div
-            className="flex items-center justify-center mb-6"
+            className="text-center py-6 px-4 mb-8"
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-            >
-              <Flame className="w-12 h-12 text-orange-500 mr-4" />
+            <motion.div className="flex items-center justify-center">
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+              >
+                <Flame className="w-10 h-10 md:w-12 md:h-12 text-orange-500 mr-3 md:mr-4" />
+              </motion.div>
+              <SplitText
+                text="Can I Burn?"
+                className="text-4xl md:text-5xl lg:text-6xl font-bold text-white font-holtwood"
+                delay={100}
+                duration={0.6}
+                ease="power3.out"
+                splitType="chars"
+                from={{ opacity: 0, y: 40 }}
+                to={{ opacity: 1, y: 0 }}
+                threshold={0.1}
+                rootMargin="-100px"
+                textAlign="center"
+                tag="h1"
+              />
             </motion.div>
-            <SplitText
-              text="Can I Burn?"
-              className="text-5xl md:text-6xl font-bold text-white font-holtwood"
-              delay={100}
-              duration={0.6}
-              ease="power3.out"
-              splitType="chars"
-              from={{ opacity: 0, y: 40 }}
-              to={{ opacity: 1, y: 0 }}
-              threshold={0.1}
-              rootMargin="-100px"
-              textAlign="center"
-              tag="h1"
-            />
           </motion.div>
-        </motion.div>
-
-        {/* Location Permission Card */}
-        <AnimatePresence>
-          {showLocationPermission && !hasRequestedLocation && (
-            <LocationPermissionCard
-              onRequestLocation={handleLocationRequest}
-              onDismiss={handleDismissLocation}
-              isLoading={isLocationLoading}
-              error={locationError}
-              permission={permission}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Main Content Area - grows to fill space */}
-        <div className="flex-1 flex flex-col justify-center">
-          {/* Loading State */}
-          <AnimatePresence>
-            {isLoading && (
-              <motion.div
-                className="flex flex-col items-center justify-center mb-8 space-y-4"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-              >
-                <EnhancedLoader 
-                  text="Checking Fire Restrictions..." 
-                  variant="fire"
-                  size="lg"
-                />
-                <motion.p 
-                  className="text-gray-400 text-sm"
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  Searching official sources
-                </motion.p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Error */}
-          <AnimatePresence>
-            {(error || locationError) && !isLoading && (
-              <motion.div
-                className="mb-8 max-w-xl mx-auto text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-              >
-                <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-xl p-6">
-                  <div className="flex items-center justify-center mb-2">
-                    <svg className="w-6 h-6 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <h3 className="text-red-400 font-semibold">
-                      {locationError ? 'Location Error' : 'Search Error'}
-                    </h3>
-                  </div>
-                  <TextGenerateEffect 
-                    words={locationError || error || 'An unexpected error occurred'} 
-                    className="text-red-300 text-sm"
-                    duration={0.3}
+            {/* Location Permission Card */}
+            <AnimatePresence>
+              {showLocationPermission && !hasRequestedLocation && (
+                <div className="mb-6">
+                  <LocationPermissionCard
+                    onRequestLocation={handleLocationRequest}
+                    onDismiss={handleDismissLocation}
+                    isLoading={isLocationLoading}
+                    error={locationError}
+                    permission={permission}
                   />
-                  {locationError && (
-                    <div className="mt-3 text-xs text-gray-400">
-                      <p>You can still search for a location manually using the search bar below.</p>
-                    </div>
-                  )}
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              )}
+            </AnimatePresence>
 
-          {/* Results */}
-          <AnimatePresence mode="wait">
-            {searchResults && !isLoading && (
-              <motion.div
-                className="mb-8 space-y-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-              >
-                <AnimatedCard intensity={0.3} scale={1.02}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
+            {/* Loading State */}
+            <AnimatePresence>
+              {isLoading && (
+                <motion.div
+                  className="flex flex-col items-center justify-center mb-8 space-y-4 py-16"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <EnhancedLoader 
+                    text="Checking Fire Restrictions..." 
+                    variant="fire"
+                    size="lg"
+                  />
+                  <motion.p 
+                    className="text-gray-400 text-sm"
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
                   >
-                    <GlassMorphismCard
-                      data={searchResults}
-                      onClose={clearResults}
+                    Searching official sources
+                  </motion.p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Error */}
+            <AnimatePresence>
+              {(error || locationError) && !isLoading && (
+                <motion.div
+                  className="mb-8 max-w-xl mx-auto text-center"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-xl p-6">
+                    <div className="flex items-center justify-center mb-2">
+                      <svg className="w-6 h-6 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <h3 className="text-red-400 font-semibold">
+                        {locationError ? 'Location Error' : 'Search Error'}
+                      </h3>
+                    </div>
+                    <TextGenerateEffect 
+                      words={locationError || error || 'An unexpected error occurred'} 
+                      className="text-red-300 text-sm"
+                      duration={0.3}
                     />
-                  </motion.div>
-                </AnimatedCard>
-                
-                {/* Enhanced Report - only show if there's meaningful data */}
-                {searchResults.burn_restriction.enhanced_report && 
-                 (searchResults.burn_restriction.enhanced_report.county_conditions || 
-                  searchResults.burn_restriction.enhanced_report.zone || 
-                  (searchResults.burn_restriction.enhanced_report.sources && searchResults.burn_restriction.enhanced_report.sources.length > 0)) && (
-                  <AnimatedCard intensity={0.2} scale={1.01}>
+                    {locationError && (
+                      <div className="mt-3 text-xs text-gray-400">
+                        <p>You can still search for a location manually using the search bar below.</p>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Results */}
+            <AnimatePresence mode="wait">
+              {searchResults && !isLoading && (
+                <motion.div
+                  className="mb-8 space-y-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                >
+                  <AnimatedCard intensity={0.3} scale={1.02}>
                     <motion.div
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.3 }}
+                      transition={{ duration: 0.5, delay: 0.1 }}
                     >
-                      <EnhancedReportCard 
-                        data={searchResults.burn_restriction.enhanced_report}
+                      <GlassMorphismCard
+                        data={searchResults}
+                        onClose={clearResults}
                       />
                     </motion.div>
                   </AnimatedCard>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-{/* Location Button */}
-{!coordinates && !isLocationLoading && (
-              <div className="mb-6 text-center">
-                <div className="flex justify-center">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    animate={{ opacity: [1, 0.3, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="relative group"
-                  >
-                    <Button
-                      onClick={handleLocationRequest}
-                      variant="outline"
-                      size="sm"
-                      className="inline-flex items-center gap-2 bg-black/60 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 hover:border-white/50 transition-all duration-300 shadow-lg"
-                    >
-                      <MapPin className="w-4 h-4" />
-                      Use My Location
-                    </Button>
+                  
+                  {/* Enhanced Report - only show if there's meaningful data */}
+                  {searchResults.burn_restriction.enhanced_report && 
+                   (searchResults.burn_restriction.enhanced_report.county_conditions || 
+                    searchResults.burn_restriction.enhanced_report.zone || 
+                    (searchResults.burn_restriction.enhanced_report.sources && searchResults.burn_restriction.enhanced_report.sources.length > 0)) && (
+                    <AnimatedCard intensity={0.2} scale={1.01}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                      >
+                        <EnhancedReportCard 
+                          data={searchResults.burn_restriction.enhanced_report}
+                        />
+                      </motion.div>
+                    </AnimatedCard>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Empty state content to ensure scrollable area works properly */}
+            {!searchResults && !isLoading && !error && !locationError && !showLocationPermission && (
+              <div className="min-h-[80vh] flex items-center justify-center">
+                <motion.div
+                  className="text-center"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.8 }}
+                >
+                  <div className="text-white/60 text-lg mb-4">
+                    Search for any Canadian location to check fire restrictions
+                  </div>
+                  <div className="text-white/40 text-sm mb-8">
+                    Enter a city, province, coordinates, or use your current location
+                  </div>
+                  
+                  {/* Test content to ensure scrolling works */}
+                  <div className="space-y-4 text-white/30 text-sm max-w-2xl mx-auto">
+                    <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
+                      <h3 className="text-white/60 font-semibold mb-2">How it works:</h3>
+                      <p>1. Enter any Canadian location or use your current position</p>
+                      <p>2. We check official provincial fire services for current restrictions</p>
+                      <p>3. Get real-time burn status and safety guidelines</p>
+                    </div>
                     
-                    {/* Custom tooltip */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.8 }}
-                      whileHover={{ opacity: 1, y: 0, scale: 1 }}
-                      className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap pointer-events-none z-50"
-                    >
-                      Get your current location for instant fire restriction info
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/80" />
-                    </motion.div>
-                  </motion.div>
-                </div>
+                    <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
+                      <h3 className="text-white/60 font-semibold mb-2">Coverage:</h3>
+                      <p>All 10 provinces and 3 territories supported</p>
+                      <p>County-level details where available</p>
+                      <p>Updated from official government sources</p>
+                    </div>
+                    
+                    <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
+                      <h3 className="text-white/60 font-semibold mb-2">Examples:</h3>
+                      <p>Try searching: "Toronto, ON", "Banff, AB", "Whitehorse, YT"</p>
+                      <p>Or coordinates: "45.4215, -75.6972"</p>
+                    </div>
+                    
+                    {/* Add more content for testing scroll */}
+                    <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
+                      <h3 className="text-white/60 font-semibold mb-2">Safety First:</h3>
+                      <p>Always check local bylaws and weather conditions</p>
+                      <p>Keep suppression equipment readily available</p>
+                      <p>Never leave fires unattended</p>
+                    </div>
+                    
+                    <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
+                      <h3 className="text-white/60 font-semibold mb-2">Emergency:</h3>
+                      <p>Report wildfires immediately to local authorities</p>
+                      <p>Call 911 for fire emergencies</p>
+                      <p>Follow evacuation orders without delay</p>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
             )}
-        {/* Search Interface - Fixed at bottom */}
-        <div className="mb-4">
-          <div className="max-w-xl mx-auto">
-            <PlaceholdersAndVanishInput
-              placeholders={[
-                "Check Calgary fire restrictions",
-                "Search Banff National Park rules",
-                "Enter Vancouver, BC coordinates",
-                "Find Algonquin Park burn status",
-                "Jasper campfire regulations",
-                "Check Tofino fire conditions",
-                "Search Whistler area restrictions",
-                "Find Cottage Country burn bans"
-              ]}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (searchValue.trim()) {
-                  handleSearch(searchValue.trim());
-                }
-              }}
-            />
-            
-            
-          </div>
-        </div>
 
-        {/* Footer */}
-        <motion.footer
-          className="text-center pb-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2, duration: 0.8 }}
-        >
-          <motion.div
-            className="flex items-center justify-center gap-2"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <p className="text-gray-500 text-sm flex items-center gap-2">
-              Built with 
+        </div>
+      </div>
+
+      {/* Fixed Bottom Footer */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-black/20 backdrop-blur-sm p-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Location Button */}
+          {!coordinates && !isLocationLoading && (
+            <div className="mb-4 text-center">
               <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1, repeat: 3 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="relative group"
               >
-                <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
+                <Button
+                  onClick={handleLocationRequest}
+                  variant="outline"
+                  size="sm"
+                  className="inline-flex items-center gap-2 bg-black/60 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 hover:border-white/50 transition-all duration-300 shadow-lg"
+                >
+                  <MapPin className="w-4 h-4" />
+                  Use My Location
+                </Button>
+                
+                {/* Custom tooltip */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                  whileHover={{ opacity: 1, y: 0, scale: 1 }}
+                  className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap pointer-events-none z-50"
+                >
+                  Get your current location for instant fire restriction info
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/80" />
+                </motion.div>
               </motion.div>
-              by SZSN Labs
-            </p>
-          </motion.div>
-        </motion.footer>
+            </div>
+          )}
+
+          {/* Search Interface */}
+          <div className="mb-4">
+            <div className="max-w-xl mx-auto">
+              <PlaceholdersAndVanishInput
+                placeholders={[
+                  "Check Calgary fire restrictions",
+                  "Search Banff National Park rules",
+                  "Enter Vancouver, BC coordinates",
+                  "Find Algonquin Park burn status",
+                  "Jasper campfire regulations",
+                  "Check Tofino fire conditions",
+                  "Search Whistler area restrictions",
+                  "Find Cottage Country burn bans"
+                ]}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (searchValue.trim()) {
+                    handleSearch(searchValue.trim());
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Footer */}
+          <motion.footer
+            className="text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2, duration: 0.8 }}
+          >
+            <motion.div
+              className="flex items-center justify-center gap-2"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <p className="text-gray-500 text-sm flex items-center gap-2">
+                Built with 
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1, repeat: 3 }}
+                >
+                  <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
+                </motion.div>
+                by SZSN Labs
+              </p>
+            </motion.div>
+          </motion.footer>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 {
   "name": "canada-fire-watch",
   "version": "1.0.0",
-  "description": "A comprehensive web application for Canadian fire burn restrictions using Kibo UI design principles",
+  "description": "A comprehensive web application for Canadian fire burn restrictions",
   "type": "module",
   "private": true,
   "scripts": {
@@ -30,9 +30,11 @@
     "lucide-react": "^0.468.0",
     "mini-svg-data-uri": "^1.4.4",
     "motion": "^12.23.12",
-    "next": "14.2.5",
+    "next": "^15.5.2",
+    "perfect-scrollbar": "^1.5.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-perfect-scrollbar": "^1.5.8",
     "styled-jsx": "^5.1.7",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7"

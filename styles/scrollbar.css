@@ -1,0 +1,35 @@
+/* Custom scrollbar styles for native scrollbars */
+
+.scrollbar-custom {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for webkit browsers */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.4));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  width: 12px;
+}
+
+/* Firefox scrollbar styles */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+}
