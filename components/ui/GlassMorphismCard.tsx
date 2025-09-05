@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { CheckCircle, AlertTriangle, Ban, HelpCircle, X, MapPin, Clock } from 'lucide-react';
+import { Badge } from './badge';
 import { cn } from '@/lib/utils';
 
 interface FireRestrictionData {
@@ -37,7 +39,7 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
           border: 'border-green-500/30',
           text: 'text-green-400',
           glow: 'shadow-green-500/20',
-          icon: '✓'
+          icon: CheckCircle
         };
       case 'RESTRICTED':
         return {
@@ -45,7 +47,7 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
           border: 'border-yellow-500/30',
           text: 'text-yellow-400',
           glow: 'shadow-yellow-500/20',
-          icon: '⚠'
+          icon: AlertTriangle
         };
       case 'BANNED':
         return {
@@ -53,7 +55,7 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
           border: 'border-red-500/30',
           text: 'text-red-400',
           glow: 'shadow-red-500/20',
-          icon: '🚫'
+          icon: Ban
         };
       default:
         return {
@@ -61,7 +63,7 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
           border: 'border-gray-500/30',
           text: 'text-gray-400',
           glow: 'shadow-gray-500/20',
-          icon: '?'
+          icon: HelpCircle
         };
     }
   };
@@ -102,8 +104,6 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
           "relative bg-black/40 backdrop-blur-xl border rounded-3xl overflow-hidden",
           statusStyle.border
         )}
-        whileHover={{ scale: 1.02 }}
-        transition={{ duration: 0.2 }}
       >
         {/* Glass morphism overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-transparent" />
@@ -129,7 +129,7 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            ✕
+            <X className="w-4 h-4" />
           </motion.button>
         )}
 
@@ -143,7 +143,7 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
           >
             <div className="flex items-center space-x-3">
               <motion.div
-                className={cn("text-2xl", statusStyle.text)}
+                className={cn("flex items-center justify-center w-8 h-8", statusStyle.text)}
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{
                   duration: 2,
@@ -151,7 +151,7 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
                   repeatDelay: 3,
                 }}
               >
-                {statusStyle.icon}
+                <statusStyle.icon className="w-6 h-6" />
               </motion.div>
               <div>
                 <h3 className="text-white font-bold text-xl">
@@ -218,11 +218,13 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <span>
-              📍 {data.latitude.toFixed(4)}, {data.longitude.toFixed(4)}
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              {data.latitude.toFixed(4)}, {data.longitude.toFixed(4)}
             </span>
-            <span>
-              🕒 {new Date(data.burn_restriction.last_updated).toLocaleDateString()}
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {new Date(data.burn_restriction.last_updated).toLocaleDateString()}
             </span>
           </motion.div>
 

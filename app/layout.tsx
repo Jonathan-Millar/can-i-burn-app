@@ -3,6 +3,11 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
+const holtwoodOneSC = {
+  fontFamily: '"Holtwood One SC"',
+  fontStyle: 'normal',
+  fontWeight: 400,
+}
 
 export const metadata: Metadata = {
   title: 'Canada Fire Watch - Kibo UI',

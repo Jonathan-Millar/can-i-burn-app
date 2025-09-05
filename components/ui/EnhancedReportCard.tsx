@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Ban, AlertTriangle, CheckCircle, HelpCircle, ChevronDown, Timer, MapPin, Link2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CountyCondition {
@@ -52,13 +53,13 @@ export const EnhancedReportCard: React.FC<EnhancedReportCardProps> = ({
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case 'no fires':
-        return '🚫';
+        return Ban;
       case 'restricted burning':
-        return '⚠️';
+        return AlertTriangle;
       case 'open burning':
-        return '✅';
+        return CheckCircle;
       default:
-        return '❓';
+        return HelpCircle;
     }
   };
 
@@ -102,7 +103,7 @@ export const EnhancedReportCard: React.FC<EnhancedReportCardProps> = ({
               transition={{ duration: 0.3 }}
               className="text-blue-400"
             >
-              ⌄
+              <ChevronDown className="w-5 h-5" />
             </motion.div>
           </motion.div>
 
@@ -120,7 +121,7 @@ export const EnhancedReportCard: React.FC<EnhancedReportCardProps> = ({
                   <p className="text-gray-300 text-sm">{data.zone.name} {data.zone.type}, {data.zone.province}</p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-2xl">{getStatusIcon(data.zone.status)}</span>
+                  {React.createElement(getStatusIcon(data.zone.status), { className: "w-6 h-6" })}
                   <span className={cn(
                     "px-3 py-1 rounded-full text-xs font-medium border",
                     data.zone.status === 'no fires' 
@@ -143,7 +144,7 @@ export const EnhancedReportCard: React.FC<EnhancedReportCardProps> = ({
               transition={{ delay: 0.2 }}
             >
               <div className="flex items-center space-x-2">
-                <span className="text-purple-400">⏰</span>
+                <Timer className="w-4 h-4 text-purple-400" />
                 <span className="text-white font-medium">Validity Period</span>
               </div>
               <p className="text-purple-200 text-sm mt-1">{data.county_conditions.validity_period}</p>
@@ -162,7 +163,7 @@ export const EnhancedReportCard: React.FC<EnhancedReportCardProps> = ({
               >
                 <div className="border-t border-white/10 pt-4">
                   <h4 className="text-white font-medium mb-4 flex items-center space-x-2">
-                    <span>📍</span>
+                    <MapPin className="w-4 h-4" />
                     <span>All County Conditions</span>
                     <span className="text-gray-400 text-sm">({countyEntries.length} counties)</span>
                   </h4>
@@ -180,7 +181,7 @@ export const EnhancedReportCard: React.FC<EnhancedReportCardProps> = ({
                       >
                         <div className="flex items-center justify-between mb-2">
                           <h5 className="text-white font-medium text-sm">{county}</h5>
-                          <span className="text-lg">{getStatusIcon(condition.normalized_status)}</span>
+                          {React.createElement(getStatusIcon(condition.normalized_status), { className: "w-5 h-5" })}
                         </div>
                         <p className="text-gray-300 text-xs mb-2">{condition.original_text}</p>
                         <div className="flex items-center justify-between">
@@ -211,7 +212,7 @@ export const EnhancedReportCard: React.FC<EnhancedReportCardProps> = ({
                     transition={{ delay: 0.3 }}
                   >
                     <h5 className="text-white font-medium mb-2 flex items-center space-x-2">
-                      <span>🔗</span>
+                      <Link2 className="w-4 h-4" />
                       <span>Data Sources</span>
                     </h5>
                     <div className="space-y-2">
