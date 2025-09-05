@@ -4,7 +4,7 @@ import { Heart, MapPin, Search, Flame, AlertTriangle, CheckCircle, Ban, HelpCirc
 // Removed PerfectScrollbar imports
 import { PlaceholdersAndVanishInput } from './ui/placeholders-and-vanish-input';
 import { LoaderFour } from './ui/loader';
-import { GlassMorphismCard } from './ui/GlassMorphismCard';
+import { ShineBorderCard } from './ui/ShineBorderCard';
 import { EnhancedReportCard } from './ui/EnhancedReportCard';
 import { LocationPermissionCard } from './ui/LocationPermissionCard';
 import { HeroHighlight, Highlight } from './ui/hero-highlight';
@@ -12,7 +12,6 @@ import { BackgroundBeams } from './ui/background-beams';
 import { Button } from './ui/button';
 import { TextGenerateEffect } from './ui/text-generate-effect';
 import { SparklesCore } from './ui/sparkles';
-import { AnimatedCard } from './ui/AnimatedCard';
 import { EnhancedLoader } from './ui/EnhancedLoader';
 import { FloatingActionButton } from './ui/FloatingActionButton';
 import { TextRevealEffect, CharacterRevealEffect } from './ui/TextRevealEffect';
@@ -21,7 +20,7 @@ import { useGeolocation } from '../lib/useGeolocation';
 
 // Data types matching the card's expected shape
 interface UICardRestrictionData {
-  status: 'ALLOWED' | 'RESTRICTED' | 'BANNED' | 'UNKNOWN';
+  status: 'Open Burning' | 'Restricted Burning' | 'Burning Banned' | 'Unknown';
   details: string | string[]; // Allow both string and array
   source: string;
   last_updated: string;
@@ -54,13 +53,22 @@ const provinceFullName: Record<string, string> = {
 
 function mapStatusToUI(burnStatus?: string): UICardRestrictionData['status'] {
   const s = (burnStatus || '').toLowerCase();
-  if (s.includes('no fires') || s.includes('no fire') || s.includes('banned')) return 'BANNED';
-  if (s.includes('restricted')) return 'RESTRICTED';
-  if (s.includes('open') || s.includes('allowed') || s.includes('permitted')) return 'ALLOWED';
-  return 'UNKNOWN';
+  if (s.includes('no fires') || s.includes('no fire') || s.includes('banned')) return 'Burning Banned';
+  if (s.includes('restricted')) return 'Restricted Burning';
+  if (s.includes('open') || s.includes('allowed') || s.includes('permitted')) return 'Open Burning';
+  return 'Unknown';
 }
 
 function mapApiToUICard(data: any): UICardLocationData {
+  // Validate required fields
+  if (typeof data.latitude !== 'number' || typeof data.longitude !== 'number') {
+    throw new Error('Invalid coordinates in API response');
+  }
+
+  if (!data.burn_status) {
+    throw new Error('Missing burn status in API response');
+  }
+
   const uiStatus = mapStatusToUI(data.burn_status);
   const provinceName = provinceFullName[data.province] || data.province || 'Unknown';
 
@@ -76,7 +84,7 @@ function mapApiToUICard(data: any): UICardLocationData {
       status: uiStatus,
       details: details,
       source: data.source || 'Unknown source',
-      last_updated: data.last_updated || new Date().toISOString(),
+      last_updated: data.last_updated || '',
       enhanced_report: data.enhanced_report,
     },
   };
@@ -90,6 +98,7 @@ export const FireRestrictionApp: React.FC = () => {
   const [showLocationPermission, setShowLocationPermission] = useState(false);
   const [hasRequestedLocation, setHasRequestedLocation] = useState(false);
   const [locationTimeout, setLocationTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   const {
     coordinates,
@@ -120,10 +129,24 @@ export const FireRestrictionApp: React.FC = () => {
         : `/api/enhanced/burn_restrictions?location=${encodeURIComponent(location)}`;
       
       const resp = await fetch(url);
-      const json = await resp.json();
+      let json;
+      try {
+        json = await resp.json();
+      } catch (parseError) {
+        throw new Error('Server returned invalid response format');
+      }
 
-      if (!resp.ok || json.error) {
-        throw new Error(json.error || `Request failed with status ${resp.status}`);
+      if (!resp.ok) {
+        throw new Error(json?.error || `Request failed with status ${resp.status}: ${resp.statusText}`);
+      }
+
+      if (json.error) {
+        throw new Error(json.error);
+      }
+
+      // Validate that we have the required data structure
+      if (!json || typeof json !== 'object') {
+        throw new Error('Invalid response: expected an object');
       }
 
       const uiData = mapApiToUICard(json);
@@ -212,6 +235,16 @@ export const FireRestrictionApp: React.FC = () => {
       }
     };
   }, [locationTimeout]);
+
+  // Handle client-side mounting to prevent hydration mismatches
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Don't render motion components until client-side mounted to prevent hydration mismatches
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen relative">
@@ -347,35 +380,31 @@ export const FireRestrictionApp: React.FC = () => {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
                 >
-                  <AnimatedCard intensity={0.3} scale={1.02}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.1 }}
-                    >
-                      <GlassMorphismCard
-                        data={searchResults}
-                        onClose={clearResults}
-                      />
-                    </motion.div>
-                  </AnimatedCard>
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                  >
+                    <ShineBorderCard
+                      data={searchResults}
+                      onClose={clearResults}
+                    />
+                  </motion.div>
                   
                   {/* Enhanced Report - only show if there's meaningful data */}
                   {searchResults.burn_restriction.enhanced_report && 
                    (searchResults.burn_restriction.enhanced_report.county_conditions || 
                     searchResults.burn_restriction.enhanced_report.zone || 
                     (searchResults.burn_restriction.enhanced_report.sources && searchResults.burn_restriction.enhanced_report.sources.length > 0)) && (
-                    <AnimatedCard intensity={0.2} scale={1.01}>
-                      <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                      >
-                        <EnhancedReportCard 
-                          data={searchResults.burn_restriction.enhanced_report}
-                        />
-                      </motion.div>
-                    </AnimatedCard>
+                    <motion.div
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.3 }}
+                    >
+                      <EnhancedReportCard 
+                        data={searchResults.burn_restriction.enhanced_report}
+                      />
+                    </motion.div>
                   )}
                 </motion.div>
               )}
@@ -442,18 +471,12 @@ export const FireRestrictionApp: React.FC = () => {
       </div>
 
       {/* Fixed Bottom Footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-black/20 backdrop-blur-sm p-4">
+      <div className="fixed bottom-0 left-0 right-0 z-30 p-4">
         <div className="max-w-4xl mx-auto">
           {/* Location Button */}
           {!coordinates && !isLocationLoading && (
             <div className="mb-4 text-center">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                animate={{ opacity: [1, 0.3, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="relative group"
-              >
+              <div className="relative group">
                 <Button
                   onClick={handleLocationRequest}
                   variant="outline"
@@ -465,15 +488,11 @@ export const FireRestrictionApp: React.FC = () => {
                 </Button>
                 
                 {/* Custom tooltip */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.8 }}
-                  whileHover={{ opacity: 1, y: 0, scale: 1 }}
-                  className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap pointer-events-none z-50"
-                >
+                <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap pointer-events-none z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   Get your current location for instant fire restriction info
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/80" />
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -509,22 +528,19 @@ export const FireRestrictionApp: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2, duration: 0.8 }}
           >
-            <motion.div
-              className="flex items-center justify-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
+            <div className="flex items-center justify-center gap-2">
               <p className="text-gray-500 text-sm flex items-center gap-2">
                 Built with 
-                <motion.div
+                <motion.span
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 1, repeat: 3 }}
+                  className="inline-flex"
                 >
                   <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
-                </motion.div>
+                </motion.span>
                 by SZSN Labs
               </p>
-            </motion.div>
+            </div>
           </motion.footer>
         </div>
       </div>

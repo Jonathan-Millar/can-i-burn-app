@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle, AlertTriangle, Ban, HelpCircle, X, MapPin, Clock } from 'lucide-react';
 import { Badge } from './badge';
 import { cn } from '@/lib/utils';
+import { ShineBorder } from './shine-border';
 
 interface FireRestrictionData {
   status: 'Open Burning' | 'Restricted Burning' | 'Burning Banned' | 'Unknown';
@@ -20,13 +21,13 @@ interface LocationData {
   burn_restriction: FireRestrictionData;
 }
 
-interface GlassMorphismCardProps {
+interface ShineBorderCardProps {
   data: LocationData;
   className?: string;
   onClose?: () => void;
 }
 
-export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
+export const ShineBorderCard: React.FC<ShineBorderCardProps> = ({
   data,
   className = "",
   onClose
@@ -35,34 +36,26 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
     switch (status) {
       case 'Open Burning':
         return {
-          bg: 'from-green-500/20 to-emerald-600/20',
-          border: 'border-green-500/30',
+          shineColor: ["#10B981", "#34D399", "#6EE7B7"], // Green gradient
           text: 'text-green-400',
-          glow: 'shadow-green-500/20',
           icon: CheckCircle
         };
       case 'Restricted Burning':
         return {
-          bg: 'from-yellow-500/20 to-orange-600/20',
-          border: 'border-yellow-500/30',
+          shineColor: ["#F59E0B", "#FBBF24", "#FCD34D"], // Yellow/Orange gradient
           text: 'text-yellow-400',
-          glow: 'shadow-yellow-500/20',
           icon: AlertTriangle
         };
       case 'Burning Banned':
         return {
-          bg: 'from-red-500/20 to-rose-600/20',
-          border: 'border-red-500/30',
+          shineColor: ["#EF4444", "#F87171", "#FCA5A5"], // Red gradient
           text: 'text-red-400',
-          glow: 'shadow-red-500/20',
           icon: Ban
         };
       default:
         return {
-          bg: 'from-gray-500/20 to-slate-600/20',
-          border: 'border-gray-500/30',
+          shineColor: ["#6B7280", "#9CA3AF", "#D1D5DB"], // Gray gradient
           text: 'text-gray-400',
-          glow: 'shadow-gray-500/20',
           icon: HelpCircle
         };
     }
@@ -82,50 +75,22 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
       }}
       layout
     >
-      {/* Background glow */}
-      <motion.div
-        className={cn("absolute -inset-1 rounded-3xl blur-lg", statusStyle.glow)}
-        animate={{
-          opacity: [0.3, 0.6, 0.3],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-        style={{
-          background: `linear-gradient(45deg, ${statusStyle.bg.replace('/20', '/10')})`
-        }}
-      />
-
-      {/* Main card */}
-      <motion.div
-        className={cn(
-          "relative bg-black/60 backdrop-blur-xl border rounded-3xl overflow-hidden",
-          statusStyle.border
-        )}
-      >
-        {/* Glass morphism overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent" />
-        
-        {/* Status gradient overlay */}
-        <motion.div
-          className={cn("absolute inset-0 bg-gradient-to-br opacity-10", statusStyle.bg)}
-          animate={{
-            opacity: [0.05, 0.15, 0.05],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
+      {/* Main card with shine border */}
+      <div className="relative bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
+        <ShineBorder 
+          shineColor={statusStyle.shineColor}
+          borderWidth={2}
+          duration={20}
         />
-
+        
+        {/* Glassmorphism overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-transparent pointer-events-none" />
+        
         {/* Close button */}
         {onClose && (
           <motion.button
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-all duration-200"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-all duration-200 z-10"
             whileTap={{ scale: 0.95 }}
           >
             <X className="w-4 h-4" />
@@ -171,7 +136,7 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
             transition={{ delay: 0.2 }}
           >
             {/* Details list */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <ul className="text-gray-200 text-sm leading-relaxed space-y-2 list-disc list-inside">
                 {(() => {
                   console.log('Details type:', typeof data.burn_restriction.details);
@@ -207,7 +172,6 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
                 })()}
               </ul>
             </div>
-
           </motion.div>
 
           {/* Location coordinates */}
@@ -256,48 +220,34 @@ export const GlassMorphismCard: React.FC<GlassMorphismCardProps> = ({
           >
             <div className={cn(
               "w-12 h-1 rounded-full opacity-60",
-              statusStyle.bg.replace('/20', '/40')
+              statusStyle.text.replace('text-', 'bg-')
             )} />
           </motion.div>
         </div>
 
-        {/* Shimmer effect */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full"
-          animate={{
-            translateX: ['100%', '100%', '-100%'],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            repeatDelay: 5,
-            ease: "easeInOut"
-          }}
-        />
-      </motion.div>
-
-      {/* Floating elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(3)].map((_, i) => (
-          <motion.div
-            key={i}
-            className={cn("absolute w-1 h-1 rounded-full", statusStyle.text.replace('text-', 'bg-'))}
-            style={{
-              top: `${20 + i * 30}%`,
-              right: `${-10 + i * 5}%`,
-            }}
-            animate={{
-              y: [0, -20, 0],
-              opacity: [0, 1, 0],
-              scale: [0.5, 1, 0.5],
-            }}
-            transition={{
-              duration: 3 + i,
-              repeat: Infinity,
-              delay: i * 0.5,
-            }}
-          />
-        ))}
+        {/* Floating elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={i}
+              className={cn("absolute w-1 h-1 rounded-full", statusStyle.text.replace('text-', 'bg-'))}
+              style={{
+                top: `${20 + i * 30}%`,
+                right: `${-10 + i * 5}%`,
+              }}
+              animate={{
+                y: [0, -20, 0],
+                opacity: [0, 1, 0],
+                scale: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: 3 + i,
+                repeat: Infinity,
+                delay: i * 0.5,
+              }}
+            />
+          ))}
+        </div>
       </div>
     </motion.div>
   );
