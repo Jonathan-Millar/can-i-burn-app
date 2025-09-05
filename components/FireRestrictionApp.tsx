@@ -107,13 +107,18 @@ export const FireRestrictionApp: React.FC = () => {
     addressLookup: true,
   });
 
-  const handleSearch = useCallback(async (location: string) => {
+  const handleSearch = useCallback(async (location: string, coords?: {latitude: number, longitude: number}) => {
     try {
       setIsLoading(true);
       setError(null);
       setSearchResults(null);
 
-      const resp = await fetch(`/api/enhanced/burn_restrictions?location=${encodeURIComponent(location)}`);
+      // Use coordinates directly if available, otherwise use location string
+      const url = coords 
+        ? `/api/enhanced/burn_restrictions?latitude=${coords.latitude}&longitude=${coords.longitude}`
+        : `/api/enhanced/burn_restrictions?location=${encodeURIComponent(location)}`;
+      
+      const resp = await fetch(url);
       const json = await resp.json();
 
       if (!resp.ok || json.error) {
@@ -164,12 +169,13 @@ export const FireRestrictionApp: React.FC = () => {
   // Auto-search when coordinates are obtained
   useEffect(() => {
     if (coordinates && !searchResults && !isLoading) {
+      console.log('FireRestrictionApp: Got coordinates, starting auto-search...', coordinates);
       // Clear any previous errors when we get coordinates
       setError(null);
       // Use address if available, otherwise use coordinates
       const locationString = locationAddress || `${coordinates.latitude}, ${coordinates.longitude}`;
       setSearchValue(locationString);
-      handleSearch(locationString);
+      handleSearch(locationString, coordinates);
     }
   }, [coordinates, locationAddress, searchResults, isLoading, handleSearch]);
 
@@ -177,6 +183,7 @@ export const FireRestrictionApp: React.FC = () => {
   useEffect(() => {
     if (permission === 'granted' && !coordinates && !isLocationLoading && !hasRequestedLocation) {
       // Automatically request location for users who previously granted permission
+      console.log('Auto-requesting location for granted permission');
       requestLocationIfGranted();
     }
   }, [permission, coordinates, isLocationLoading, hasRequestedLocation, requestLocationIfGranted]);
